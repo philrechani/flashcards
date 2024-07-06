@@ -1,0 +1,52 @@
+[
+  {
+    "question": "What is the SELECT statement used for?",
+    "answer": "It is used to retrieve data from one or more tables",
+    "time-added": "now",
+    "tags": [
+      "SQL",
+      "SELECT"
+    ],
+    "notes": "here is a note"
+  },
+  {
+    "question": "What is the INSERT statement used for?",
+    "answer": "It is used to insert new data into a table.",
+    "time-added": "now",
+    "tags": [
+      "SQL",
+      "INSERT"
+    ],
+    "notes": "hi"
+  },
+  {
+    "question": "What is the UPDATE statement used for?",
+    "answer": "It is used to modify existing data in a table.",
+    "time-added": "now",
+    "tags": [
+      "SQL",
+      "UPDATE"
+    ],
+    "notes": "hi"
+  },
+  {
+    "question": "What is the DELETE statement used for?",
+    "answer": "It is used to delete data from a table.",
+    "time-added": "now",
+    "tags": [
+      "SQL",
+      "DELETE"
+    ],
+    "notes": "hi"
+  },
+  {
+    "question": "What is the use of the CREATE statement?",
+    "answer": "It is used to create a new table, view, or other database object",
+    "time-added": "now",
+    "tags": [
+      "SQL",
+      "CREATE"
+    ],
+    "notes": "HI"
+  }
+]

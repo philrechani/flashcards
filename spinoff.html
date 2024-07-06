@@ -1,0 +1,92 @@
+<html>
+<div id="background" class="background">
+
+    <head>
+        <input type="file" id="file-input" accept=".json">
+
+        <link rel="stylesheet" href="default.css">
+
+    </head>
+
+    <body>
+        <ol id="card-container" class="card-container">
+            <li id="card" class="card">
+                <div id="text" class="text">
+
+                </div>
+
+            </li>
+            <li id="control" class="control">
+                <button id="leftArrow">&#8592;</button>
+                <div id="counter" class="counter">
+
+                </div>
+                <button id="rightArrow">&#8594;</button>
+            </li>
+        </ol>
+    </body>
+</div>
+<script>
+    let jsonData, shuffledArray, flipped, k;
+
+    document.getElementById("card").addEventListener('click', function (event) {
+        if (flipped) {
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            flipped = false
+        }
+        else {
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).answer
+            flipped = true
+        }
+    })
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    document.getElementById('file-input').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    jsonData = JSON.parse(e.target.result);
+                    console.log(jsonData);
+                    shuffledArray = shuffleArray([...jsonData])
+                    k = 0
+                    document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+                    
+
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    document.getElementById('leftArrow').addEventListener('click', function (event) {
+        if (shuffledArray) {
+            k -= 1
+            console.log(k % (shuffledArray.length - 1))
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            flipped = false
+        }
+
+    })
+    document.getElementById('rightArrow').addEventListener('click', function (event) {
+        if (shuffledArray) {
+            k += 1
+            console.log(k % (shuffledArray.length - 1))
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            flipped = false
+        }
+    })
+
+</script>
+
+</html>

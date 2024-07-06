@@ -1,0 +1,230 @@
+<html>
+<div id="background" class="background">
+
+    <head>
+        <label for="file-input" class="custom-file-upload">
+            Choose File
+        </label>
+        <input type="file" id="file-input" accept=".json">
+
+        <link rel="stylesheet" href="default.css">
+
+    </head>
+
+    <body>
+        <div id="card-container" class="card-container">
+            <div id="card" class="card">
+                <div id="text" class="text">
+
+                </div>
+
+            </div>
+            <div id="control" class="control">
+                <button id="leftArrow">&#8678;</button>
+                <div id="counter" class="counter">
+
+                </div>
+                <button id="rightArrow">&#8680;</button>
+            </div>
+        </div>
+        <div id="editor">
+
+        </div>
+    </body>
+</div>
+
+<script type="module">
+    let jsonData, shuffledArray, flipped, k;
+    var cardData = {}
+
+    function downloadJSONArray(jsonArray, filename = 'data.json') {
+        // Convert JSON array to string
+        const jsonString = JSON.stringify(jsonArray, null, 2);
+    
+        // Create a Blob with the JSON string
+        const blob = new Blob([jsonString], { type: 'application/json' });
+    
+        // Create a temporary URL for the Blob
+        const url = URL.createObjectURL(blob);
+    
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+    
+        // Append the link to the body (required for Firefox)
+        document.body.appendChild(link);
+    
+        // Trigger the download
+        link.click();
+    
+        // Clean up
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+    }
+
+    function appendJsonData() {
+
+        const newEntry = {}
+        for (const key in shuffledArray[0]) {
+            if (shuffledArray[0].hasOwnProperty(key)) {
+                const element = document.getElementById(key)
+                newEntry[key] = element.textContent
+            }
+            
+        }
+        shuffledArray.push(newEntry)
+        shuffledArray = loadAndDisplayData(shuffledArray)
+    }
+
+    function generateForm(obj) {
+        const form = document.createElement('details');
+        const summary = document.createElement('summary')
+        summary.textContent = 'Click to create an entry'
+        form.appendChild(summary)
+        for (const key in obj[0]) {
+            if (obj[0].hasOwnProperty(key)) {
+                const label = document.createElement('div');
+                label.textContent = key + ': ';
+                label.className = 'key-label'
+
+                const input = document.createElement('div');
+                input.className = 'content-input'
+                input.contentEditable = true
+                input.name = key;
+                input.id = key;
+
+                // Set input type based on value type
+                switch (typeof obj[0][key]) {
+                    case 'number':
+                        input.type = 'number';
+                        break;
+                    case 'boolean':
+                        input.type = 'checkbox';
+                        input.checked = obj[0][key];
+                        break;
+                    default:
+                        input.type = 'text';
+                }
+
+                input.textContent = "";
+
+                const div = document.createElement('div');
+                div.appendChild(label);
+                div.appendChild(input);
+                form.appendChild(div);
+            }
+        }
+
+        const submitButton = document.createElement('button');
+        submitButton.onclick = () => {
+            appendJsonData()
+        }
+        submitButton.id = 'submit'
+        submitButton.type = 'submit';
+        submitButton.textContent = 'Submit';
+        form.appendChild(submitButton);
+
+        return form;
+    }
+
+    // Generate and append the form
+    function loadForm(obj) {
+        const formContainer = document.getElementById('editor');
+        const generatedForm = generateForm(obj);
+        formContainer.innerHTML = ''
+        formContainer.appendChild(generatedForm)
+    }
+
+
+    function loadAndDisplayData(data) {
+        shuffledArray = shuffleArray([...data]);
+        k = 0;
+        document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+        flipped = false;
+        document.getElementById('counter').textContent = `${cyclicMapping(k, shuffledArray)} / ${shuffledArray.length}`
+
+        return shuffledArray
+    }
+
+    function cyclicMapping(k, array) {
+        return ((k % array.length) + array.length) % array.length + 1;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const cachedData = localStorage.getItem('cachedData');
+        if (cachedData) {
+            try {
+                const parsedData = JSON.parse(cachedData);
+                loadAndDisplayData(parsedData);
+                loadForm(parsedData)
+                console.log('Loaded cached data');
+            } catch (error) {
+                console.error('Error parsing cached data:', error);
+            }
+        } else {
+            console.log('No cached data found. Please select a file.');
+        }
+    });
+
+    document.getElementById("card").addEventListener('click', function (event) {
+        if (flipped) {
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            flipped = false
+        }
+        else {
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).answer
+            flipped = true
+        }
+    })
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    document.getElementById('file-input').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    jsonData = JSON.parse(e.target.result);
+                    shuffledArray = loadAndDisplayData(jsonData)
+                    localStorage.setItem('cachedData', JSON.stringify(shuffledArray));
+                    loadForm(shuffledArray)
+
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    document.getElementById('leftArrow').addEventListener('click', function (event) {
+        if (shuffledArray) {
+            k -= 1
+
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            document.getElementById('counter').textContent = `${cyclicMapping(k, shuffledArray)} / ${shuffledArray.length}`
+            flipped = false
+        }
+
+    })
+    document.getElementById('rightArrow').addEventListener('click', function (event) {
+        if (shuffledArray) {
+            k += 1
+
+            document.getElementById('text').textContent = shuffledArray.at(k % (shuffledArray.length)).question
+            document.getElementById('counter').textContent = `${cyclicMapping(k, shuffledArray)} / ${shuffledArray.length}`
+            flipped = false
+        }
+    })
+
+</script>
+
+</html>
